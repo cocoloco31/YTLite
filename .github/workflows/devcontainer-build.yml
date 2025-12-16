@@ -1,0 +1,33 @@
+name: Devcontainer build
+
+on:
+  workflow_dispatch: {}
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    name: Build devcontainer image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (needed for devcontainers CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install devcontainers CLI
+        run: |
+          npm install -g @devcontainers/cli
+
+      - name: Build devcontainer
+        run: |
+          devcontainer build --workspace-folder . --file .devcontainer/devcontainer.json --output imageName=ytlite-devcontainer:latest
+
+      - name: Inspect image
+        if: ${{ success() }}
+        run: |
+          echo "Devcontainer image built: ytlite-devcontainer:latest"
