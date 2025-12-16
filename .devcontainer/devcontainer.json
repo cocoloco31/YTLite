@@ -48,19 +48,18 @@
         "eamodio.gitlens",
         "ms-vsliveshare.vsliveshare",
         "ms-vscode-remote.remote-containers"
-      ]
-    }
-  },
-
-  // Use bash by default and keep the standard non-root vscode user
-  "settings": {
-    "terminal.integrated.defaultProfile.linux": "bash",
-    "terminal.integrated.profiles.linux": {
-      "bash": {
-        "path": "/bin/bash"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        }
       }
     }
   },
 
+  "onCreateCommand": "bash -lc 'npm run setup || true',",
   "remoteUser": "vscode"
 }
