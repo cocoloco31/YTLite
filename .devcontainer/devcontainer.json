@@ -1,63 +1,66 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/kubernetes-helm
+// Devcontainer for YTLite — cleaned and made robust for Debian base image
 {
-	"name": "Kubernetes - Local Configuration",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/base:bullseye",
+  "name": "YTLite Dev Container",
 
-	"features": {
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-			"enableNonRootDocker": "true",
-			"moby": "true"
-		},
-		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-			"version": "latest",
-			"helm": "latest",
-			"minikube": "none"
-		},
-		"./local-features/copy-kube-config": {},
-		"ghcr.io/stuartleeks/dev-container-features/add-host:1": {},
-		"ghcr.io/devcontainers/features/node:1": {
-			"version": "lts"
-		},
-		"ghcr.io/devcontainers-extra/features/act:1": {}
-	},
+  // Base image (Debian Bullseye) — many features expect Debian/Ubuntu tooling
+  "image": "mcr.microsoft.com/devcontainers/base:bullseye",
 
-	"remoteEnv": {
-		"SYNC_LOCALHOST_KUBECONFIG": "true"
-	},
+  // Common features that work on Debian: Node (LTS), Docker-in-Docker support, kubectl+helm
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": { "enableNonRootDocker": "true", "moby": "true" },
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": { "version": "latest", "helm": "latest", "minikube": "none" },
+    "./local-features/copy-kube-config": {},
+    "ghcr.io/devcontainers-extra/features/act:1": {}
+  },
 
-	"initializeCommand": "cd .devcontainer && bash ensure-mount-sources",
-	"mounts": [
-		{
-			"source": "${env:HOME}${env:USERPROFILE}/.kube",
-			"target": "/usr/local/share/kube-localhost",
-			"type": "bind"
-		},
-		// Optional mount to also sync certs in your .minikube folder
-		{
-			"source": "${env:HOME}${env:USERPROFILE}/.minikube",
-			"target": "/usr/local/share/minikube-localhost",
-			"type": "bind"
-		}
-	],
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"GitHub.vscode-github-actions"
-			]
-		}
-	}
+  // Keep the existing env flag for kube syncing
+  "remoteEnv": {
+    "SYNC_LOCALHOST_KUBECONFIG": "true"
+  },
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+  // Run the helper script that exists in the repo if present
+  "initializeCommand": "cd .devcontainer && bash ensure-mount-sources",
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "kubectl version",
+  // Helpful default post-create step: install dependencies if a JS project
+  "postCreateCommand": "bash -lc 'if [ -f package.json ]; then (npm ci || npm install); fi'",
 
-	// Configure tool-specific properties.
-	// "customizations": {},
+  // Common forwarded ports (adjust as needed)
+  "forwardPorts": [3000, 8080, 9229],
 
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+  "mounts": [
+    {
+      "source": "${env:HOME}${env:USERPROFILE}/.kube",
+      "target": "/usr/local/share/kube-localhost",
+      "type": "bind"
+    },
+    {
+      "source": "${env:HOME}${env:USERPROFILE}/.minikube",
+      "target": "/usr/local/share/minikube-localhost",
+      "type": "bind"
+    }
+  ],
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.vscode-github-actions",
+        "eamodio.gitlens",
+        "ms-vsliveshare.vsliveshare",
+        "ms-vscode-remote.remote-containers"
+      ]
+    }
+  },
+
+  // Use bash by default and keep the standard non-root vscode user
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.profiles.linux": {
+      "bash": {
+        "path": "/bin/bash"
+      }
+    }
+  },
+
+  "remoteUser": "vscode"
 }
